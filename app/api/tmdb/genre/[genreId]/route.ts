@@ -2,27 +2,42 @@ import { NextResponse } from 'next/server';
 
 export async function GET(
   request: Request,
-  { params }: { params: { genreId: string } }
+  { params }: { params: Promise<{ genreId: string }> }
 ) {
   const apiKey = process.env.TMDB_API_KEY;
+  const { genreId } = await params;
   
   if (!apiKey) {
-    return NextResponse.json({ error: 'API key not configured' }, { status: 500 });
+    console.error('TMDB_API_KEY not configured');
+    return NextResponse.json(
+      { error: 'API key not configured', details: 'TMDB_API_KEY environment variable is missing' },
+      { status: 500 }
+    );
   }
 
   try {
-    const response = await fetch(
-      `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_genres=${params.genreId}`
-    );
-    const data = await response.json();
+    const url = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_genres=${genreId}`;
+    const response = await fetch(url, {
+      next: { revalidate: 3600 }, // Cache for 1 hour
+    });
     
     if (!response.ok) {
-      return NextResponse.json({ error: 'TMDB API error' }, { status: response.status });
+      const errorText = await response.text();
+      console.error('TMDB API error:', response.status, errorText);
+      return NextResponse.json(
+        { error: 'TMDB API error', status: response.status, details: errorText },
+        { status: response.status }
+      );
     }
     
+    const data = await response.json();
     return NextResponse.json(data);
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch movies' }, { status: 500 });
+  } catch (error: any) {
+    console.error('Failed to fetch movies:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch movies', details: error?.message || 'Unknown error' },
+      { status: 500 }
+    );
   }
 }
 

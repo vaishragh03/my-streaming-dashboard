@@ -45,9 +45,9 @@ npm install
 ```env
 TMDB_API_KEY=5b815bf91fa942c41e80fda28f9746d2
 OMDB_API_KEY=a60c7ded
-NEXT_PUBLIC_TMDB_API_KEY=5b815bf91fa942c41e80fda28f9746d2
-NEXT_PUBLIC_OMDB_API_KEY=a60c7ded
 ```
+
+**Note:** We use server-side API routes, so only `TMDB_API_KEY` (without `NEXT_PUBLIC_` prefix) is needed. The API key stays secure on the server.
 
 4. Run the development server:
 ```bash
