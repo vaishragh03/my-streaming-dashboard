@@ -13,12 +13,26 @@ interface MoviePageProps {
 }
 
 async function getMovieDetails(id: string): Promise<MovieDetails | null> {
+  const apiKey = process.env.TMDB_API_KEY;
+  
+  if (!apiKey) {
+    console.error('TMDB_API_KEY not configured');
+    return null;
+  }
+
   try {
     // Try to fetch as movie first
     try {
-      const movie = await tmdbApi.getMovieDetails(parseInt(id), 'movie');
-      if (movie && movie.id) {
-        return movie;
+      const response = await fetch(
+        `https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}`,
+        { next: { revalidate: 3600 } } // Cache for 1 hour
+      );
+      
+      if (response.ok) {
+        const movie = await response.json();
+        if (movie && movie.id) {
+          return movie;
+        }
       }
     } catch (movieError) {
       // Movie not found, try TV show
@@ -26,9 +40,16 @@ async function getMovieDetails(id: string): Promise<MovieDetails | null> {
     
     // If not found as movie, try as TV show
     try {
-      const tvShow = await tmdbApi.getMovieDetails(parseInt(id), 'tv');
-      if (tvShow && tvShow.id) {
-        return tvShow;
+      const response = await fetch(
+        `https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}`,
+        { next: { revalidate: 3600 } } // Cache for 1 hour
+      );
+      
+      if (response.ok) {
+        const tvShow = await response.json();
+        if (tvShow && tvShow.id) {
+          return tvShow;
+        }
       }
     } catch (tvError) {
       // TV show not found

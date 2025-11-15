@@ -1,10 +1,5 @@
-import axios from 'axios';
-
-const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/original';
 const TMDB_IMAGE_BASE_URL_W500 = 'https://image.tmdb.org/t/p/w500';
-
-const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
 export interface Movie {
   id: number;
@@ -29,96 +24,66 @@ export interface MovieDetails extends Movie {
   production_companies: { id: number; name: string; logo_path: string | null }[];
 }
 
+// Helper function to fetch from our API routes
+async function fetchFromApi(endpoint: string) {
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+  const response = await fetch(`${baseUrl}${endpoint}`);
+  
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`);
+  }
+  
+  return response.json();
+}
+
 export const tmdbApi = {
   getTrending: async (): Promise<Movie[]> => {
-    const response = await axios.get(`${TMDB_BASE_URL}/trending/all/week`, {
-      params: { api_key: apiKey },
-    });
-    return response.data.results;
+    const data = await fetchFromApi('/api/tmdb/trending');
+    return data.results;
   },
 
   getNetflixOriginals: async (): Promise<Movie[]> => {
-    const response = await axios.get(`${TMDB_BASE_URL}/discover/tv`, {
-      params: {
-        api_key: apiKey,
-        with_networks: 213,
-      },
-    });
-    return response.data.results;
+    const data = await fetchFromApi('/api/tmdb/netflix-originals');
+    return data.results;
   },
 
   getTopRated: async (): Promise<Movie[]> => {
-    const response = await axios.get(`${TMDB_BASE_URL}/movie/top_rated`, {
-      params: { api_key: apiKey },
-    });
-    return response.data.results;
+    const data = await fetchFromApi('/api/tmdb/top-rated');
+    return data.results;
   },
 
   getActionMovies: async (): Promise<Movie[]> => {
-    const response = await axios.get(`${TMDB_BASE_URL}/discover/movie`, {
-      params: {
-        api_key: apiKey,
-        with_genres: 28,
-      },
-    });
-    return response.data.results;
+    const data = await fetchFromApi('/api/tmdb/genre/28');
+    return data.results;
   },
 
   getComedyMovies: async (): Promise<Movie[]> => {
-    const response = await axios.get(`${TMDB_BASE_URL}/discover/movie`, {
-      params: {
-        api_key: apiKey,
-        with_genres: 35,
-      },
-    });
-    return response.data.results;
+    const data = await fetchFromApi('/api/tmdb/genre/35');
+    return data.results;
   },
 
   getHorrorMovies: async (): Promise<Movie[]> => {
-    const response = await axios.get(`${TMDB_BASE_URL}/discover/movie`, {
-      params: {
-        api_key: apiKey,
-        with_genres: 27,
-      },
-    });
-    return response.data.results;
+    const data = await fetchFromApi('/api/tmdb/genre/27');
+    return data.results;
   },
 
   getRomanceMovies: async (): Promise<Movie[]> => {
-    const response = await axios.get(`${TMDB_BASE_URL}/discover/movie`, {
-      params: {
-        api_key: apiKey,
-        with_genres: 10749,
-      },
-    });
-    return response.data.results;
+    const data = await fetchFromApi('/api/tmdb/genre/10749');
+    return data.results;
   },
 
   getDocumentaries: async (): Promise<Movie[]> => {
-    const response = await axios.get(`${TMDB_BASE_URL}/discover/movie`, {
-      params: {
-        api_key: apiKey,
-        with_genres: 99,
-      },
-    });
-    return response.data.results;
+    const data = await fetchFromApi('/api/tmdb/genre/99');
+    return data.results;
   },
 
   getMovieDetails: async (id: number, type: 'movie' | 'tv' = 'movie'): Promise<MovieDetails> => {
-    const response = await axios.get(`${TMDB_BASE_URL}/${type}/${id}`, {
-      params: { api_key: apiKey },
-    });
-    return response.data;
+    return await fetchFromApi(`/api/tmdb/movie/${id}?type=${type}`);
   },
 
   searchMovies: async (query: string): Promise<Movie[]> => {
-    const response = await axios.get(`${TMDB_BASE_URL}/search/multi`, {
-      params: {
-        api_key: apiKey,
-        query,
-      },
-    });
-    return response.data.results;
+    const data = await fetchFromApi(`/api/tmdb/search?query=${encodeURIComponent(query)}`);
+    return data.results;
   },
 };
 

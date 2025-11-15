@@ -86,7 +86,11 @@ The application uses two APIs:
 1. **TMDB (The Movie Database)**: Primary source for movie/TV show data, images, and metadata
 2. **OMDB (Open Movie Database)**: Additional movie details, ratings, and reviews
 
-Make sure to add your API keys to the `.env.local` file. For production, use environment variables on your hosting platform.
+Make sure to add your API keys to the `.env.local` file. For production (Vercel), add them in the project settings.
+
+**Security Note:** API keys are kept secure using Next.js API routes. The keys are never exposed to the client-side code.
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
 
 ## Features in Detail
 
